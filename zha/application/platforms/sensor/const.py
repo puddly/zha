@@ -1,9 +1,9 @@
 """Constants for the sensor platform."""
 
-import enum
+from enum import StrEnum
 
 
-class SensorStateClass(enum.StrEnum):
+class SensorStateClass(StrEnum):
     """State class for sensors."""
 
     MEASUREMENT = "measurement"
@@ -20,7 +20,7 @@ class SensorStateClass(enum.StrEnum):
     For example: an amount of consumed gas"""
 
 
-class SensorDeviceClass(enum.StrEnum):
+class SensorDeviceClass(StrEnum):
     """Device class for sensors."""
 
     # Non-numerical device classes
@@ -85,6 +85,12 @@ class SensorDeviceClass(enum.StrEnum):
     Unit of measurement: `ppm` (parts per million)
     """
 
+    CONDUCTIVITY = "conductivity"
+    """Conductivity.
+
+    Unit of measurement: `S/cm`, `mS/cm`, `µS/cm`
+    """
+
     CURRENT = "current"
     """Current.
 
@@ -122,7 +128,7 @@ class SensorDeviceClass(enum.StrEnum):
 
     Use this device class for sensors measuring energy consumption, for example
     electric energy consumption.
-    Unit of measurement: `Wh`, `kWh`, `MWh`, `MJ`, `GJ`
+    Unit of measurement: `J`, `kJ`, `MJ`, `GJ`, `Wh`, `kWh`, `MWh`, `cal`, `kcal`, `Mcal`, `Gcal`
     """
 
     ENERGY_STORAGE = "energy_storage"
@@ -290,8 +296,8 @@ class SensorDeviceClass(enum.StrEnum):
     """Generic speed.
 
     Unit of measurement: `SPEED_*` units or `UnitOfVolumetricFlux`
-    - SI /metric: `mm/d`, `mm/h`, `m/s`, `km/h`
-    - USCS / imperial: `in/d`, `in/h`, `ft/s`, `mph`
+    - SI /metric: `mm/d`, `mm/h`, `m/s`, `km/h`, `mm/s`
+    - USCS / imperial: `in/d`, `in/h`, `in/s`, `ft/s`, `mph`
     - Nautical: `kn`
     - Beaufort: `Beaufort`
     """

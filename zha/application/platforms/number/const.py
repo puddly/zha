@@ -264,6 +264,12 @@ class NumberDeviceClass(StrEnum):
     Unit of measurement: `ppm` (parts per million)
     """
 
+    CONDUCTIVITY = "conductivity"
+    """Conductivity.
+
+    Unit of measurement: `S/cm`, `mS/cm`, `µS/cm`
+    """
+
     CURRENT = "current"
     """Current.
 
