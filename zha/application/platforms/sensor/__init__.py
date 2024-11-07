@@ -38,20 +38,18 @@ from zha.application.platforms.sensor.const import (
 from zha.application.registries import PLATFORM_ENTITIES
 from zha.decorators import periodic
 from zha.units import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    CONCENTRATION_PARTS_PER_BILLION,
-    CONCENTRATION_PARTS_PER_MILLION,
-    LIGHT_LUX,
     PERCENTAGE,
-    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfApparentPower,
+    UnitOfConcentration,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
     UnitOfFrequency,
+    UnitOfIlluminance,
     UnitOfMass,
     UnitOfPower,
     UnitOfPressure,
+    UnitOfSignalStrength,
     UnitOfTemperature,
     UnitOfTime,
     UnitOfVolume,
@@ -772,7 +770,7 @@ class Illuminance(Sensor):
     _attribute_name = "measured_value"
     _attr_device_class: SensorDeviceClass = SensorDeviceClass.ILLUMINANCE
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = LIGHT_LUX
+    _attr_native_unit_of_measurement = UnitOfIlluminance.LUX
 
     def formatter(self, value: int) -> int | None:
         """Convert illumination data."""
@@ -1213,7 +1211,7 @@ class CarbonDioxideConcentration(Sensor):
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _decimals = 0
     _multiplier = 1e6
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfConcentration.PARTS_PER_MILLION
 
 
 @MULTI_MATCH(cluster_handler_names="carbon_monoxide_concentration")
@@ -1225,7 +1223,7 @@ class CarbonMonoxideConcentration(Sensor):
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _decimals = 0
     _multiplier = 1e6
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfConcentration.PARTS_PER_MILLION
 
 
 @MULTI_MATCH(generic_ids="cluster_handler_0x042e", stop_on_match_group="voc_level")
@@ -1238,7 +1236,7 @@ class VOCLevel(Sensor):
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _decimals = 0
     _multiplier = 1e6
-    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = UnitOfConcentration.MICROGRAMS_PER_CUBIC_METER
 
 
 @MULTI_MATCH(
@@ -1256,7 +1254,7 @@ class PPBVOCLevel(Sensor):
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _decimals = 0
     _multiplier = 1
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_BILLION
+    _attr_native_unit_of_measurement = UnitOfConcentration.PARTS_PER_BILLION
 
 
 @MULTI_MATCH(cluster_handler_names="pm25")
@@ -1268,7 +1266,7 @@ class PM25(Sensor):
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _decimals = 0
     _multiplier = 1
-    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = UnitOfConcentration.MICROGRAMS_PER_CUBIC_METER
 
 
 @MULTI_MATCH(cluster_handler_names="formaldehyde_concentration")
@@ -1280,7 +1278,7 @@ class FormaldehydeConcentration(Sensor):
     _attr_translation_key: str = "formaldehyde"
     _decimals = 0
     _multiplier = 1e6
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfConcentration.PARTS_PER_MILLION
 
 
 @MULTI_MATCH(
@@ -1425,7 +1423,9 @@ class RSSISensor(Sensor):
     _unique_id_suffix = "rssi"
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
     _attr_device_class: SensorDeviceClass | None = SensorDeviceClass.SIGNAL_STRENGTH
-    _attr_native_unit_of_measurement: str | None = SIGNAL_STRENGTH_DECIBELS_MILLIWATT
+    _attr_native_unit_of_measurement: str | None = (
+        UnitOfSignalStrength.DECIBELS_MILLIWATT
+    )
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_entity_registry_enabled_default = False
     _attr_translation_key: str = "rssi"
