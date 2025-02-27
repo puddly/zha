@@ -68,6 +68,7 @@ class Cover(PlatformEntity):
     PLATFORM = Platform.COVER
 
     _attr_translation_key: str = "cover"
+    _attr_primary_weight = 10
 
     def __init__(
         self,
@@ -91,9 +92,8 @@ class Cover(PlatformEntity):
                     self._cover_cluster_handler.window_covering_type
                 )
             )
-        self._attr_supported_features: CoverEntityFeature = (
-            self._determine_supported_features()
-        )
+
+        self._attr_supported_features: CoverEntityFeature = CoverEntityFeature(0)
 
         self._target_lift_position: int | None = None
         self._target_tilt_position: int | None = None
@@ -112,9 +112,39 @@ class Cover(PlatformEntity):
 
         self._state: CoverState | None = CoverState.OPEN
         self._determine_state(refresh=True)
-        self._cover_cluster_handler.on_event(
-            CLUSTER_HANDLER_ATTRIBUTE_UPDATED,
-            self.handle_cluster_handler_attribute_updated,
+
+    def recompute_capabilities(self) -> None:
+        """Recompute capabilities and feature flags."""
+        super().recompute_capabilities()
+
+        self._attr_supported_features = (
+            CoverEntityFeature.OPEN
+            | CoverEntityFeature.CLOSE
+            | CoverEntityFeature.STOP
+            | CoverEntityFeature.SET_POSITION
+        )
+        if (
+            self._cover_cluster_handler.window_covering_type
+            and self._cover_cluster_handler.window_covering_type
+            in (
+                WCT.Shutter,
+                WCT.Tilt_blind_tilt_only,
+                WCT.Tilt_blind_tilt_and_lift,
+            )
+        ):
+            self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
+            self._attr_supported_features |= CoverEntityFeature.OPEN_TILT
+            self._attr_supported_features |= CoverEntityFeature.CLOSE_TILT
+            self._attr_supported_features |= CoverEntityFeature.STOP_TILT
+
+    def on_add(self) -> None:
+        """Run when entity is added."""
+        super().on_add()
+        self._on_remove_callbacks.append(
+            self._cover_cluster_handler.on_event(
+                CLUSTER_HANDLER_ATTRIBUTE_UPDATED,
+                self.handle_cluster_handler_attribute_updated,
+            )
         )
 
     def restore_external_state_attributes(
@@ -128,7 +158,7 @@ class Cover(PlatformEntity):
         self._state = state
         # Target positions have been removed
 
-    @functools.cached_property
+    @property
     def supported_features(self) -> CoverEntityFeature:
         """Return supported features."""
         return self._attr_supported_features
@@ -185,29 +215,6 @@ class Cover(PlatformEntity):
         in the WindowCovering cluster handler.
         """
         return self._cover_cluster_handler.current_position_tilt_percentage
-
-    def _determine_supported_features(self) -> CoverEntityFeature:
-        """Determine the supported cover features."""
-        supported_features: CoverEntityFeature = (
-            CoverEntityFeature.OPEN
-            | CoverEntityFeature.CLOSE
-            | CoverEntityFeature.STOP
-            | CoverEntityFeature.SET_POSITION
-        )
-        if (
-            self._cover_cluster_handler.window_covering_type
-            and self._cover_cluster_handler.window_covering_type
-            in (
-                WCT.Shutter,
-                WCT.Tilt_blind_tilt_only,
-                WCT.Tilt_blind_tilt_and_lift,
-            )
-        ):
-            supported_features |= CoverEntityFeature.SET_TILT_POSITION
-            supported_features |= CoverEntityFeature.OPEN_TILT
-            supported_features |= CoverEntityFeature.CLOSE_TILT
-            supported_features |= CoverEntityFeature.STOP_TILT
-        return supported_features
 
     @staticmethod
     def _determine_state_of_axis(
@@ -583,6 +590,7 @@ class Shade(PlatformEntity):
         | CoverEntityFeature.STOP
         | CoverEntityFeature.SET_POSITION
     )
+    _attr_primary_weight = 10
 
     def __init__(
         self,
@@ -604,12 +612,20 @@ class Shade(PlatformEntity):
         self._position: int | None = self._zcl_level_to_ha_position(
             self._level_cluster_handler.current_level
         )
-        self._on_off_cluster_handler.on_event(
-            CLUSTER_HANDLER_ATTRIBUTE_UPDATED,
-            self.handle_cluster_handler_attribute_updated,
+
+    def on_add(self) -> None:
+        """Run when entity is added."""
+        super().on_add()
+        self._on_remove_callbacks.append(
+            self._on_off_cluster_handler.on_event(
+                CLUSTER_HANDLER_ATTRIBUTE_UPDATED,
+                self.handle_cluster_handler_attribute_updated,
+            )
         )
-        self._level_cluster_handler.on_event(
-            CLUSTER_HANDLER_LEVEL_CHANGED, self.handle_cluster_handler_set_level
+        self._on_remove_callbacks.append(
+            self._level_cluster_handler.on_event(
+                CLUSTER_HANDLER_LEVEL_CHANGED, self.handle_cluster_handler_set_level
+            )
         )
 
     @property
