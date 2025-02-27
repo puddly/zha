@@ -111,6 +111,7 @@ class Cover(PlatformEntity):
         self._movement_timer: asyncio.TimerHandle | None = None
 
         self._state: CoverState | None = CoverState.OPEN
+        self.recompute_capabilities()
         self._determine_state(refresh=True)
 
     def recompute_capabilities(self) -> None:
@@ -612,6 +613,7 @@ class Shade(PlatformEntity):
         self._position: int | None = self._zcl_level_to_ha_position(
             self._level_cluster_handler.current_level
         )
+        self.recompute_capabilities()
 
     def on_add(self) -> None:
         """Run when entity is added."""
