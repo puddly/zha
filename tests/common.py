@@ -138,7 +138,12 @@ async def send_attributes_report(
     manufacturer_codes: set[int | None] = set()
 
     for attr, value in attributes.items():
-        if isinstance(attr, int):
+        try:
+            attr_def = cluster.find_attribute(attr)
+        except KeyError as exc:
+            if not isinstance(attr, int):
+                raise RuntimeError(f"Invalid attribute {attr!r}={value!r}") from exc  # noqa: TRY004
+
             # Raw attribute ID for unknown attributes
             manufacturer_codes.add(None)
             reports.append(
@@ -151,7 +156,6 @@ async def send_attributes_report(
                 )
             )
         else:
-            attr_def = cluster.find_attribute(attr)
             manufacturer_codes.add(cluster._get_effective_manufacturer_code(attr_def))
 
             reports.append(
