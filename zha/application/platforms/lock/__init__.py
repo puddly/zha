@@ -35,6 +35,7 @@ from zha.application.platforms.lock.const import (
     STATE_UNLOCKED,
     VALUE_TO_STATE,
 )
+from zha.common.commands import LockCommands
 
 if TYPE_CHECKING:
     from zha.zigbee.device import Device
@@ -48,7 +49,7 @@ class LockState(BaseEntityState):
     is_locked: bool
 
 
-class BaseLock(PlatformEntity, ABC):
+class BaseLock(PlatformEntity, LockCommands, ABC):
     """Abstract base class for ZHA lock entities."""
 
     PLATFORM = Platform.LOCK
@@ -65,14 +66,6 @@ class BaseLock(PlatformEntity, ABC):
     @abstractmethod
     def is_locked(self) -> bool:
         """Return true if entity is locked."""
-
-    @abstractmethod
-    async def async_lock(self) -> None:
-        """Lock the lock."""
-
-    @abstractmethod
-    async def async_unlock(self) -> None:
-        """Unlock the lock."""
 
 
 @register_entity(DoorLockCluster.cluster_id)

@@ -42,6 +42,7 @@ from zha.application.platforms.helpers import validate_device_class
 from zha.application.platforms.legacy_quirks import AQARA_OPPLE_CLUSTER
 from zha.application.platforms.number.bacnet import BACNET_UNITS_TO_HA_UNITS
 from zha.application.platforms.number.const import ICONS, NumberDeviceClass, NumberMode
+from zha.common.commands import NumberCommands
 from zha.quirks import DANFOSS_ALLY_THERMOSTAT
 from zha.units import UnitOfMass, UnitOfTemperature, UnitOfTime
 
@@ -64,7 +65,7 @@ class NumberState(BaseEntityState):
     native_unit_of_measurement: str | None
 
 
-class BaseNumber(PlatformEntity, ABC):
+class BaseNumber(PlatformEntity, NumberCommands, ABC):
     """Representation of a ZHA Number entity."""
 
     PLATFORM = Platform.NUMBER
@@ -120,10 +121,6 @@ class BaseNumber(PlatformEntity, ABC):
     def mode(self) -> NumberMode:
         """Return the mode of the entity."""
         return self._attr_mode
-
-    @abstractmethod
-    async def async_set_native_value(self, value: float) -> None:
-        """Update the current value from HA."""
 
 
 @register_entity(AnalogOutput.cluster_id)

@@ -52,6 +52,7 @@ from zha.application.platforms.legacy_quirks import (
     T2RelayOppleCluster,
 )
 from zha.application.platforms.siren import AdvancedSiren
+from zha.common.commands import SelectCommands
 from zha.quirks import (
     BEGA_LIGHT_SWITCHABLE_WHITE,
     DANFOSS_ALLY_THERMOSTAT,
@@ -82,7 +83,7 @@ class EnumSelectState(SelectState):
     options: list[str]
 
 
-class BaseSelectEntity(BaseEntity, ABC):
+class BaseSelectEntity(BaseEntity, SelectCommands, ABC):
     """Abstract base class for select entities (platform-agnostic)."""
 
     PLATFORM = Platform.SELECT
@@ -106,10 +107,6 @@ class BaseSelectEntity(BaseEntity, ABC):
     @abstractmethod
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-
-    @abstractmethod
-    async def async_select_option(self, option: str) -> None:
-        """Change the selected option."""
 
 
 class SirenDefaultSelectEntity(BaseSelectEntity, ZclPlatformEntity):

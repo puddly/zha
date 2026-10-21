@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 import dataclasses
 from typing import Final
 
@@ -11,6 +11,7 @@ from zigpy.types.named import EUI64
 from zha.application import Platform
 from zha.application.platforms import PlatformEntity
 from zha.application.platforms.infrared.const import InfraredDeviceClass
+from zha.common.commands import InfraredEmitterCommands
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -35,16 +36,12 @@ class EntityInfraredSignalReceivedEvent:
     signal: InfraredSignal
 
 
-class BaseInfraredEmitter(PlatformEntity, ABC):
+class BaseInfraredEmitter(PlatformEntity, InfraredEmitterCommands, ABC):
     """Base representation of a ZHA infrared emitter entity."""
 
     PLATFORM = Platform.INFRARED
 
     _attr_device_class: InfraredDeviceClass = InfraredDeviceClass.EMITTER
-
-    @abstractmethod
-    async def async_send_command(self, signal: InfraredSignal) -> None:
-        """Transmit an infrared signal."""
 
 
 class BaseInfraredReceiver(PlatformEntity, ABC):

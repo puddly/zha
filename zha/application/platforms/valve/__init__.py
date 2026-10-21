@@ -8,6 +8,7 @@ import dataclasses
 from zha.application import Platform
 from zha.application.platforms import BaseEntityState, PlatformEntity
 from zha.application.platforms.valve.const import ValveDeviceClass, ValveEntityFeature
+from zha.common.commands import ValveCommands
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -22,7 +23,7 @@ class ValveEntityState(BaseEntityState):
     supported_features: ValveEntityFeature
 
 
-class BaseValve(PlatformEntity, ABC):
+class BaseValve(PlatformEntity, ValveCommands, ABC):
     """Abstract base class for ZHA valves."""
 
     PLATFORM = Platform.VALVE
@@ -76,14 +77,6 @@ class BaseValve(PlatformEntity, ABC):
     @abstractmethod
     def is_closed(self) -> bool | None:
         """Return if the valve is closed."""
-
-    @abstractmethod
-    async def async_open_valve(self) -> None:
-        """Open the valve."""
-
-    @abstractmethod
-    async def async_close_valve(self) -> None:
-        """Close the valve."""
 
     async def async_set_valve_position(self, position: int) -> None:
         """Move the valve to a specific position."""

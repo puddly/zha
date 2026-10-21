@@ -52,6 +52,7 @@ from zha.application.platforms.climate.const import (
     HVACMode,
     Preset,
 )
+from zha.common.commands import ClimateCommands
 from zha.decorators import periodic
 from zha.units import UnitOfTemperature
 
@@ -95,7 +96,7 @@ class ThermostatState(ClimateState):
     unoccupied_heating_setpoint: int | None = None
 
 
-class BaseThermostat(PlatformEntity, ABC):
+class BaseThermostat(PlatformEntity, ClimateCommands, ABC):
     """Abstract base class for climate entities."""
 
     PLATFORM = Platform.CLIMATE
@@ -196,28 +197,6 @@ class BaseThermostat(PlatformEntity, ABC):
     @abstractmethod
     def supported_features(self) -> ClimateEntityFeature:
         """Return the list of supported features."""
-
-    @abstractmethod
-    async def async_set_fan_mode(self, fan_mode: str) -> None:
-        """Set fan mode."""
-
-    @abstractmethod
-    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Set new target operation mode."""
-
-    @abstractmethod
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set new preset mode."""
-
-    @abstractmethod
-    async def async_set_temperature(
-        self,
-        target_temp_low: float | None = None,
-        target_temp_high: float | None = None,
-        temperature: float | None = None,
-        hvac_mode: HVACMode | None = None,
-    ) -> None:
-        """Set new target temperature."""
 
 
 @register_entity(ThermostatCluster.cluster_id)

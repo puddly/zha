@@ -1922,6 +1922,7 @@ async def test_reinitialize_emits_events_for_new_entities(
     assert event_listener.call_args[0][0] == DeviceEntityAddedEvent(
         platform=Platform.NUMBER,
         unique_id=unique_id,
+        state=zha_device.get_platform_entity(Platform.NUMBER, unique_id).state,
     )
 
 
@@ -2022,6 +2023,10 @@ async def test_entity_recomputation(zha_gateway: Gateway) -> None:
             DeviceEntityAddedEvent(
                 platform=Platform.NUMBER,
                 unique_id="68:0a:e2:ff:fe:8f:fa:33-1-768-start_up_color_temperature",
+                state=zha_device.get_platform_entity(
+                    Platform.NUMBER,
+                    "68:0a:e2:ff:fe:8f:fa:33-1-768-start_up_color_temperature",
+                ).state,
             )
         )
     ]

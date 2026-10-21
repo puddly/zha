@@ -876,17 +876,18 @@ async def test_reinterview_in_place_events(zha_gateway: Gateway) -> None:
             platform=Platform.SWITCH, unique_id="00:0d:6f:00:0a:90:69:e7-1-6"
         ),
         # And new ones added
-        DeviceEntityAddedEvent(
-            platform=Platform.SENSOR, unique_id="00:0d:6f:00:0a:90:69:e7-1-0-rssi"
-        ),
-        DeviceEntityAddedEvent(
-            platform=Platform.SENSOR, unique_id="00:0d:6f:00:0a:90:69:e7-1-0-lqi"
-        ),
-        DeviceEntityAddedEvent(
-            platform=Platform.SENSOR, unique_id="00:0d:6f:00:0a:90:69:e7-1-1029"
-        ),
-        DeviceEntityAddedEvent(
-            platform=Platform.SWITCH, unique_id="00:0d:6f:00:0a:90:69:e7-1-6"
+        *(
+            DeviceEntityAddedEvent(
+                platform=platform,
+                unique_id=unique_id,
+                state=zha_device.get_platform_entity(platform, unique_id).state,
+            )
+            for platform, unique_id in [
+                (Platform.SENSOR, "00:0d:6f:00:0a:90:69:e7-1-0-rssi"),
+                (Platform.SENSOR, "00:0d:6f:00:0a:90:69:e7-1-0-lqi"),
+                (Platform.SENSOR, "00:0d:6f:00:0a:90:69:e7-1-1029"),
+                (Platform.SWITCH, "00:0d:6f:00:0a:90:69:e7-1-6"),
+            ]
         ),
     ]
 

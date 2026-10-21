@@ -50,6 +50,7 @@ from zha.application.platforms.cover.const import (
     CoverState,
     WCAttrs,
 )
+from zha.common.commands import CoverCommands
 from zha.exceptions import ZHAException
 
 if TYPE_CHECKING:
@@ -78,7 +79,7 @@ class CoverEntityState(BaseEntityState):
     supported_features: CoverEntityFeature
 
 
-class BaseCover(PlatformEntity, ABC):
+class BaseCover(PlatformEntity, CoverCommands, ABC):
     """Abstract base class for ZHA covers."""
 
     PLATFORM = Platform.COVER
@@ -122,21 +123,28 @@ class BaseCover(PlatformEntity, ABC):
         In HA, None is unknown, 0 is closed, 100 is fully open.
         """
 
-    @abstractmethod
-    async def async_open_cover(self) -> None:
-        """Open the cover."""
+    async def async_open_cover_tilt(self) -> None:
+        """Open the cover tilt."""
+        raise NotImplementedError
 
-    @abstractmethod
-    async def async_close_cover(self) -> None:
-        """Close the cover."""
+    async def async_close_cover_tilt(self) -> None:
+        """Close the cover tilt."""
+        raise NotImplementedError
 
-    @abstractmethod
-    async def async_set_cover_position(self, position: int) -> None:
-        """Move the cover to a specific position."""
+    async def async_set_cover_tilt_position(self, tilt_position: int) -> None:
+        """Move the cover tilt to a specific position."""
+        raise NotImplementedError
 
-    @abstractmethod
-    async def async_stop_cover(self) -> None:
-        """Stop the cover."""
+    async def async_stop_cover_tilt(self) -> None:
+        """Stop the cover tilt."""
+        raise NotImplementedError
+
+    def restore_external_state_attributes(
+        self,
+        *,
+        state: CoverState | None,
+    ) -> None:
+        """Restore external state attributes; nothing is stored outside ZCL by default."""
 
 
 @register_entity(WindowCovering.cluster_id)

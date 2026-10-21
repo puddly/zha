@@ -51,6 +51,7 @@ from zha.application.platforms.fan.helpers import (
     percentage_to_ranged_value,
     ranged_value_to_percentage,
 )
+from zha.common.commands import FanCommands
 from zha.zigbee.group import Group
 
 if TYPE_CHECKING:
@@ -74,7 +75,7 @@ class FanState(BaseEntityState):
     default_on_percentage: int
 
 
-class BaseFan(BaseEntity, ABC):
+class BaseFan(BaseEntity, FanCommands, ABC):
     """Base representation of a ZHA fan."""
 
     PLATFORM = Platform.FAN

@@ -74,6 +74,7 @@ from zha.application.platforms.light.helpers import (
     filter_supported_color_modes,
     is_brightness_supported,
 )
+from zha.common.commands import LightCommands
 from zha.debounce import Debouncer
 from zha.decorators import periodic
 
@@ -105,7 +106,7 @@ class LightState(BaseEntityState):
     max_mireds: int | None
 
 
-class BaseLight(BaseEntity, ABC):
+class BaseLight(BaseEntity, LightCommands, ABC):
     """Operations common to all light entities."""
 
     PLATFORM = Platform.LIGHT
@@ -204,23 +205,6 @@ class BaseLight(BaseEntity, ABC):
     def max_mireds(self) -> int | None:
         """Return the warmest color_temp that this light supports."""
         return self._max_mireds
-
-    @abstractmethod
-    async def async_turn_on(
-        self,
-        *,
-        transition: float | None = None,
-        brightness: int | None = None,
-        effect: str | None = None,
-        flash: FlashMode | None = None,
-        color_temp: int | None = None,
-        xy_color: tuple[float, float] | None = None,
-    ) -> None:
-        """Turn the entity on."""
-
-    @abstractmethod
-    async def async_turn_off(self, *, transition: float | None = None) -> None:
-        """Turn the entity off."""
 
     def restore_external_state_attributes(
         self,

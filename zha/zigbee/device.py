@@ -72,6 +72,7 @@ from zha.application.const import (
     UNKNOWN_MODEL,
     ZHA_CLUSTER_BIND_EVENT,
     ZHA_CLUSTER_CONFIGURE_REPORTING_EVENT,
+    ZHA_DEVICE_AVAILABILITY_CHANGED_EVENT,
     ZHA_DEVICE_CONFIGURED_EVENT,
     ZHA_DEVICE_ENTITY_ADDED_EVENT,
     ZHA_DEVICE_ENTITY_REMOVED_EVENT,
@@ -207,9 +208,9 @@ class DeviceEntityAddedEvent:
     event_type: Final[str] = ZHA_DEVICE_ENTITY_ADDED_EVENT
     event: Final[str] = ZHA_DEVICE_ENTITY_ADDED_EVENT
 
-    # TODO: allow all entity information to be serialized and include it here
     platform: Platform
     unique_id: str
+    state: BaseEntityState
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -222,6 +223,16 @@ class DeviceEntityRemovedEvent:
     platform: Platform
     unique_id: str
     remove: bool = False
+
+
+@dataclass(kw_only=True, frozen=True)
+class DeviceAvailabilityChangedEvent:
+    """Emitted when the device's availability flips."""
+
+    event_type: Final[str] = ZHA_DEVICE_AVAILABILITY_CHANGED_EVENT
+    event: Final[str] = ZHA_DEVICE_AVAILABILITY_CHANGED_EVENT
+
+    available: bool
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -727,6 +738,11 @@ class BaseDevice[ZigpyDeviceT: ZigpyBaseDevice](LogMixin, EventBase):
         )
         availability_changed = self.available ^ available
         self.available = available
+        if availability_changed:
+            self.emit(
+                ZHA_DEVICE_AVAILABILITY_CHANGED_EVENT,
+                DeviceAvailabilityChangedEvent(available=available),
+            )
         if availability_changed and available:
             # reinit cluster handlers then signal entities
             self.debug(
@@ -875,6 +891,7 @@ class BaseDevice[ZigpyDeviceT: ZigpyBaseDevice](LogMixin, EventBase):
                 DeviceEntityAddedEvent(
                     platform=entity.PLATFORM,
                     unique_id=entity.unique_id,
+                    state=entity.state,
                 ),
             )
 

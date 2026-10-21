@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 import functools
 import logging
@@ -24,6 +24,7 @@ from zha.application.platforms import (
 from zha.application.platforms.button.const import DEFAULT_DURATION, ButtonDeviceClass
 from zha.application.platforms.const import TUYA_MANUFACTURER_CLUSTER
 from zha.application.platforms.legacy_quirks import AQARA_OPPLE_CLUSTER
+from zha.common.commands import ButtonCommands
 
 if TYPE_CHECKING:
     from zha.zigbee.device import Device
@@ -56,7 +57,7 @@ class WriteAttributeButtonState(ButtonState):
     attribute_value: Any
 
 
-class BaseButton(PlatformEntity, ABC):
+class BaseButton(PlatformEntity, ButtonCommands, ABC):
     """Base representation of a ZHA button."""
 
     PLATFORM = Platform.BUTTON
@@ -65,10 +66,6 @@ class BaseButton(PlatformEntity, ABC):
     def state(self) -> ButtonState:
         """Return the state of the button."""
         return ButtonState(**super().state.__dict__)
-
-    @abstractmethod
-    async def async_press(self) -> None:
-        """Send out a press command."""
 
 
 class Button(BaseButton, ZclPlatformEntity):

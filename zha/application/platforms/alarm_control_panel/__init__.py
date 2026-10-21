@@ -34,6 +34,7 @@ from zha.application.platforms.alarm_control_panel.const import (
     AlarmState,
     CodeFormat,
 )
+from zha.common.commands import AlarmControlPanelCommands
 from zha.zigbee.endpoint import cluster_event_unique_id
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ class AlarmControlPanelState(BaseEntityState):
     supported_features: int
 
 
-class BaseAlarmControlPanel(PlatformEntity, ABC):
+class BaseAlarmControlPanel(PlatformEntity, AlarmControlPanelCommands, ABC):
     """Abstract base class for ZHA alarm control panel entities."""
 
     PLATFORM = Platform.ALARM_CONTROL_PANEL
@@ -94,26 +95,6 @@ class BaseAlarmControlPanel(PlatformEntity, ABC):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         return self._attr_supported_features
-
-    @abstractmethod
-    async def async_alarm_disarm(self, code: str | None = None) -> None:
-        """Send disarm command."""
-
-    @abstractmethod
-    async def async_alarm_arm_home(self, code: str | None = None) -> None:
-        """Send arm home command."""
-
-    @abstractmethod
-    async def async_alarm_arm_away(self, code: str | None = None) -> None:
-        """Send arm away command."""
-
-    @abstractmethod
-    async def async_alarm_arm_night(self, code: str | None = None) -> None:
-        """Send arm night command."""
-
-    @abstractmethod
-    async def async_alarm_trigger(self, code: str | None = None) -> None:
-        """Send alarm trigger command."""
 
 
 @register_entity(AceCluster.cluster_id)

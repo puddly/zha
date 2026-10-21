@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 import asyncio
 import contextlib
 from dataclasses import dataclass
@@ -32,6 +32,7 @@ from zha.application.platforms import (
     ZclPlatformEntity,
     register_entity,
 )
+from zha.common.commands import SirenCommands
 from zha.quirks import SIREN_BASIC
 
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class SirenState(BaseEntityState):
     supported_features: SirenEntityFeature
 
 
-class BaseSiren(PlatformEntity, ABC):
+class BaseSiren(PlatformEntity, SirenCommands, ABC):
     """Abstract base class for ZHA siren entities."""
 
     PLATFORM = Platform.SIREN
@@ -99,34 +100,6 @@ class BaseSiren(PlatformEntity, ABC):
     def supported_features(self) -> SirenEntityFeature:
         """Return supported features."""
         return self._attr_supported_features
-
-    @abstractmethod
-    async def async_turn_on(
-        self,
-        duration: int | None = None,
-        tone: int | None = None,
-        volume_level: int | None = None,
-        # These kwargs are ZHA extensions to the base HA entity signature
-        strobe: int | None = None,
-        strobe_duty_cycle: int | None = None,
-        strobe_intensity: int | None = None,
-    ) -> None:
-        """Turn on siren."""
-
-    @abstractmethod
-    async def async_turn_off(self) -> None:
-        """Turn off siren."""
-
-    # This method is a ZHA extension to the base HA siren entity
-    @abstractmethod
-    async def async_squawk(
-        self,
-        *,
-        mode: SquawkMode,
-        strobe: int,
-        squawk_level: int,
-    ) -> None:
-        """Issue a brief squawk pulse."""
 
 
 class BaseZclSiren(BaseSiren, ZclPlatformEntity, ABC):

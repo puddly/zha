@@ -44,6 +44,7 @@ from zha.application.platforms.const import (
 )
 from zha.application.platforms.legacy_quirks import AQARA_OPPLE_CLUSTER
 from zha.application.platforms.light.const import LIGHT_PROFILE_DEVICE_TYPES
+from zha.common.commands import SwitchCommands
 from zha.exceptions import ZHAException
 from zha.quirks import DANFOSS_ALLY_THERMOSTAT, TUYA_PLUG_ONOFF
 from zha.zigbee.group import Group
@@ -74,7 +75,7 @@ class ConfigurableAttributeSwitchState(SwitchState):
     on_value: int
 
 
-class BaseSwitch(BaseEntity, ABC):
+class BaseSwitch(BaseEntity, SwitchCommands, ABC):
     """Common base class for zhawss switches."""
 
     PLATFORM = Platform.SWITCH
@@ -91,14 +92,6 @@ class BaseSwitch(BaseEntity, ABC):
     @abstractmethod
     def is_on(self) -> bool:
         """Return if the switch is on based on the statemachine."""
-
-    @abstractmethod
-    async def async_turn_on(self) -> None:
-        """Turn the entity on."""
-
-    @abstractmethod
-    async def async_turn_off(self) -> None:
-        """Turn the entity off."""
 
 
 @register_entity(OnOff.cluster_id)
@@ -391,7 +384,7 @@ class SwitchGroup(GroupEntity, BaseSwitch):  # type: ignore[misc]
         self.maybe_emit_state_changed_event()
 
 
-class ConfigurableAttributeSwitch(ZclPlatformEntity):
+class ConfigurableAttributeSwitch(ZclPlatformEntity, SwitchCommands):
     """Representation of a ZHA switch configuration entity."""
 
     PLATFORM = Platform.SWITCH

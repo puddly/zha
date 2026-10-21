@@ -32,6 +32,7 @@ from zha.application.platforms import (
     ZclPlatformEntity,
     register_entity,
 )
+from zha.common.commands import UpdateCommands
 from zha.exceptions import ZHAException
 
 if TYPE_CHECKING:
@@ -81,7 +82,7 @@ class UpdateState(BaseEntityState):
     supported_features: UpdateEntityFeature
 
 
-class BaseFirmwareUpdateEntity(PlatformEntity, ABC):
+class BaseFirmwareUpdateEntity(PlatformEntity, UpdateCommands, ABC):
     """Abstract base class for ZHA firmware update entities."""
 
     PLATFORM = Platform.UPDATE
