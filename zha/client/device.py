@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from zigpy.types.named import EUI64, NWK
 
 from zha.application import Platform
+from zha.application.const import ATTR_COMMAND, POWER_MAINS_POWERED
 from zha.client.entity import Entity, Remote, remote
 from zha.client.platforms import create_entity
 from zha.common.messages import DeviceTarget
@@ -138,6 +139,25 @@ class Device(Remote, EventBase):
         return self._info.device_type
 
     @property
+    def is_mains_powered(self) -> bool:
+        """Return true if device is mains powered."""
+        return self._info.power_source == POWER_MAINS_POWERED
+
+    @property
+    def device_automation_triggers(self) -> dict[tuple[str, str], dict[str, str]]:
+        """Return the device automation triggers for this device."""
+        return self._info.device_automation_triggers
+
+    @property
+    def device_automation_commands(self) -> dict[str, list[tuple[str, str]]]:
+        """Return a lookup of commands to etype/sub_type."""
+        commands: dict[str, list[tuple[str, str]]] = {}
+        for etype_subtype, trigger in self.device_automation_triggers.items():
+            if command := trigger.get(ATTR_COMMAND):
+                commands.setdefault(command, []).append(etype_subtype)
+        return commands
+
+    @property
     def zigbee_signature(self) -> dict[str, Any]:
         """Return the zigbee signature for this device."""
         return self._info.signature
@@ -156,14 +176,61 @@ class Device(Remote, EventBase):
         """Get a platform entity by unique id."""
         return self.platform_entities[(platform, unique_id)]
 
+    def get_entity(
+        self,
+        platform: Platform,
+        endpoint_id: int | None = None,
+        *,
+        pick_first: bool = False,
+    ) -> Entity:
+        """Look up the unique entity matching platform and endpoint filters."""
+        matches = [
+            entity
+            for entity in self.platform_entities.values()
+            if platform == entity.PLATFORM
+            and (endpoint_id is None or entity.state.endpoint_id == endpoint_id)
+        ]
+        if not matches or (not pick_first and len(matches) != 1):
+            raise LookupError(
+                f"Expected {'>=1' if pick_first else '1'} entity matching "
+                f"platform={platform!r}, endpoint_id={endpoint_id}; "
+                f"found {len(matches)}"
+            )
+        return matches[0]
+
     def update_from_info(self, info: ExtendedDeviceInfo) -> None:
-        """Replace the snapshot and reconcile entities."""
+        """Replace the snapshot and reconcile entities.
+
+        A rebuilt device (re-interview) arrives with new entities but no
+        entity-added events, so added and dropped entities are announced here.
+        """
         self._info = info
         self._available = info.available
-        self._sync_entities(info)
+        added, removed = self._sync_entities(info)
 
-    def _sync_entities(self, info: ExtendedDeviceInfo) -> None:
+        for entity in removed:
+            self.emit(
+                DeviceEntityRemovedEvent.event_type,
+                DeviceEntityRemovedEvent(
+                    platform=entity.PLATFORM, unique_id=entity.unique_id
+                ),
+            )
+        for entity in added:
+            self.emit(
+                DeviceEntityAddedEvent.event_type,
+                DeviceEntityAddedEvent(
+                    platform=entity.PLATFORM,
+                    unique_id=entity.unique_id,
+                    state=entity.state,
+                ),
+            )
+
+    def _sync_entities(
+        self, info: ExtendedDeviceInfo
+    ) -> tuple[list[Entity], list[Entity]]:
         current: set[tuple[Platform, str]] = set()
+        added: list[Entity] = []
+        removed: list[Entity] = []
 
         for unique_id, state in info.entities.items():
             key = (Platform(state.platform), unique_id)
@@ -171,13 +238,16 @@ class Device(Remote, EventBase):
             if key in self.platform_entities:
                 self.platform_entities[key].replace_state(state)
             else:
-                self.platform_entities[key] = create_entity(self._client, state)
+                entity = create_entity(self._client, state)
+                self.platform_entities[key] = entity
+                added.append(entity)
 
         for key in list(self.platform_entities):
             if key not in current:
-                del self.platform_entities[key]
+                removed.append(self.platform_entities.pop(key))
 
         self._sync_firmware_version()
+        return added, removed
 
     def _sync_firmware_version(self) -> None:
         for (platform, _unique_id), entity in self.platform_entities.items():

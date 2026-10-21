@@ -195,6 +195,7 @@ class BaseEntityState:
     migrate_unique_ids: frozenset[str]
     platform: str
     class_name: str
+    icon: str | None
     translation_key: str | None
     translation_placeholders: dict[str, str] | None
     device_class: str | None
@@ -428,6 +429,7 @@ class BaseEntity(LogMixin, EventBase):
             platform=self.PLATFORM,
             class_name=self.__class__.__name__,
             fallback_name=self.fallback_name,
+            icon=self.icon,
             translation_key=self.translation_key,
             translation_placeholders=self.translation_placeholders,
             device_class=self.device_class,

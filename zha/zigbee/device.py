@@ -298,6 +298,7 @@ class DeviceInfo:
     available: bool
     device_type: str
     signature: dict[str, Any]
+    device_automation_triggers: dict[tuple[str, str], dict[str, str]]
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -805,6 +806,7 @@ class BaseDevice[ZigpyDeviceT: ZigpyBaseDevice](LogMixin, EventBase):
             available=self.available,
             device_type=self.device_type,
             signature=self.signature,
+            device_automation_triggers=self.device_automation_triggers,
         )
 
     @property

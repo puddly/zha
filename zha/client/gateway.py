@@ -6,12 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from zigpy.types.named import EUI64
 
-from zha.application.gateway import (
-    DeviceFullInitEvent,
-    DeviceRemovedEvent,
-    Gateway as ServerGateway,
-    GroupEvent,
-)
+from zha.application.gateway import DeviceFullInitEvent, DeviceRemovedEvent, GroupEvent
 from zha.client.device import Device
 from zha.client.entity import Remote
 from zha.client.group import Group
@@ -38,17 +33,6 @@ class Gateway(Remote, EventBase):
             info.group_id: Group(client, self, info) for info in initial.groups
         }
         self.coordinator_zha_device: Device = self.devices[initial.coordinator_ieee]
-
-    @property
-    def server(self) -> ServerGateway:
-        """Return the server-side gateway.
-
-        Temporary escape hatch for consumers that still need the zigpy
-        application controller. Only available over the in-process transport.
-        """
-        server = self._client.server
-        assert server is not None
-        return server.gateway
 
     def get_device(self, ieee: EUI64) -> Device | None:
         """Return Device for given ieee."""

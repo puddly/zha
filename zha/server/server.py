@@ -20,6 +20,7 @@ from zha.application.const import (
     ZHA_GW_MSG_GROUP_MEMBER_REMOVED,
     ZHA_GW_MSG_GROUP_REMOVED,
 )
+from zha.application.gateway import Gateway
 from zha.application.platforms import (
     BaseEntity,
     BaseIdentifiers,
@@ -39,7 +40,7 @@ from zha.common.messages import (
 )
 
 if TYPE_CHECKING:
-    from zha.application.gateway import Gateway
+    from zha.application.helpers import ZHAData
     from zha.zigbee.device import BaseDevice
     from zha.zigbee.group import Group, GroupMemberReference
 
@@ -73,7 +74,7 @@ class Server:
     """Forwards gateway, device, group, and entity events and dispatches commands."""
 
     def __init__(self, gateway: Gateway) -> None:
-        """Initialize the server."""
+        """Initialize the server around an existing gateway."""
         self.gateway = gateway
         self._listeners: list[Callable[[EventMessage], None]] = []
         self._gateway_unsub: Callable[[], None] | None = None
@@ -90,6 +91,25 @@ class Server:
             "async_reinterview_device": gateway.async_reinterview_device,
             "async_remove_device": gateway.async_remove_device,
         }
+
+    @classmethod
+    async def async_from_config(cls, config: ZHAData) -> Self:
+        """Create a server owning a new gateway built from config."""
+        return cls(await Gateway.async_from_config(config))
+
+    async def async_initialize(self) -> None:
+        """Connect the radio and begin forwarding events."""
+        await self.gateway.async_initialize()
+        self.start()
+
+    async def async_initialize_devices_and_entities(self) -> None:
+        """Initialize devices and load entities."""
+        await self.gateway.async_initialize_devices_and_entities()
+
+    async def shutdown(self) -> None:
+        """Stop forwarding events and shut the gateway down."""
+        self.stop()
+        await self.gateway.shutdown()
 
     def start(self) -> None:
         """Subscribe to everything the gateway currently knows about."""

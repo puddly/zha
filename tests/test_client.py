@@ -58,7 +58,7 @@ async def test_initial_state(zha_gateway: Gateway) -> None:
         assert client.connected is True
         assert client.server is server
         assert client.gateway is not None
-        assert client.gateway.server is zha_gateway
+        assert client.server.gateway is zha_gateway
         assert (
             client.gateway.coordinator_zha_device.ieee
             == zha_gateway.state.node_info.ieee
