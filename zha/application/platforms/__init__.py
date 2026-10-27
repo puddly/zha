@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import abstractmethod
 import asyncio
 from collections import defaultdict
-from collections.abc import Callable, Collection, Mapping
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 import dataclasses
 from dataclasses import dataclass, field
@@ -321,10 +321,6 @@ class BaseEntity(LogMixin, EventBase):
 
     def _is_supported(self) -> bool:
         """Return if the entity is supported for the device, internal."""
-        return True
-
-    def is_supported_in_list(self, entities: Collection[BaseEntity]) -> bool:
-        """Return if the entity is supported given all other entities."""
         return True
 
     def recompute_capabilities(self) -> None:

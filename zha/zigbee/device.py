@@ -79,6 +79,7 @@ from zha.application.platforms import (
     EntityStateChangedEvent,
     PlatformEntity,
     ZclPlatformEntity,
+    button,
     sensor,
 )
 from zha.application.platforms.update import BaseFirmwareUpdateEntity
@@ -945,10 +946,7 @@ class BaseDevice[ZigpyDeviceT: ZigpyBaseDevice](LogMixin, EventBase):
             entity.recompute_capabilities()
 
             # Ignore unsupported entities, unless they are force-created
-            if not entity.force_create and (
-                not entity.is_supported()
-                or not entity.is_supported_in_list(all_entities.values())
-            ):
+            if not entity.force_create and not entity.is_supported():
                 await entity.on_remove()
                 continue
 
@@ -994,9 +992,7 @@ class BaseDevice[ZigpyDeviceT: ZigpyBaseDevice](LogMixin, EventBase):
         for entity in entities[:]:
             entity.recompute_capabilities()
 
-            if not entity.force_create and (
-                not entity.is_supported() or not entity.is_supported_in_list(entities)
-            ):
+            if not entity.force_create and not entity.is_supported():
                 self.debug("Removing unsupported entity %s", entity)
                 await self._remove_entity(entity, remove=True)
                 entities.remove(entity)
@@ -1486,6 +1482,20 @@ class ZigbeeDevice(BaseDevice[ZigpyDevice]):
 
             yield sensor.RSSISensor(self, unique_id=unique_id_base)
             yield sensor.LQISensor(self, unique_id=unique_id_base)
+
+        # One identify button per device, keeping the legacy unique ID of the first
+        # endpoint with an Identify cluster
+        if (
+            identify_cluster := button.IdentifyButton.legacy_identify_cluster(self)
+        ) is not None:
+            yield button.IdentifyButton(
+                self,
+                cluster=identify_cluster,
+                unique_id=(
+                    f"{self.ieee}-{identify_cluster.endpoint.endpoint_id}"
+                    f"-{Identify.cluster_id}"
+                ),
+            )
 
         for ep_id, endpoint in self.endpoints.items():
             if ep_id == 0:

@@ -43,6 +43,7 @@ from zha.application.platforms import EntityCategory, PlatformEntity
 from zha.application.platforms.button import (
     Button,
     FrostLockResetButton,
+    IdentifyButton,
     WriteAttributeButton,
 )
 from zha.application.platforms.button.const import ButtonDeviceClass
@@ -115,7 +116,7 @@ async def test_button(
     cluster = zigpy_device.endpoints[1].identify
     assert cluster is not None
     entity: PlatformEntity = get_entity(zha_device, Platform.BUTTON)
-    assert isinstance(entity, Button)
+    assert isinstance(entity, IdentifyButton)
     assert entity.PLATFORM == Platform.BUTTON
 
     with patch(

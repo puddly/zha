@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Collection
 from dataclasses import dataclass
 import functools
 import logging
 from typing import TYPE_CHECKING, Any
+import warnings
 
+from zigpy.zcl import Cluster, ClusterType
 from zigpy.zcl.clusters.general import Identify
 
 from zha.application import Platform
 from zha.application.helpers import write_attributes_safe
 from zha.application.platforms import (
-    BaseEntity,
     BaseEntityState,
     ClusterMatch,
     EntityCategory,
@@ -127,25 +127,74 @@ class Button(BaseButton, ZclPlatformEntity):
         await command(*arguments, **kwargs)
 
 
-@register_entity(Identify.cluster_id)
-class IdentifyButton(Button):
-    """Defines a ZHA identify button."""
+class IdentifyButton(BaseButton):
+    """Defines a ZHA identify button for a device."""
 
     _attr_device_class = ButtonDeviceClass.IDENTIFY
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _command_name = "identify"
-    _kwargs = {}
-    _args = [DEFAULT_DURATION]
-    _cluster_id = Identify.cluster_id
 
-    _cluster_match = ClusterMatch(
-        server_clusters=frozenset({Identify.cluster_id}),
-    )
+    _device: Device
 
-    def is_supported_in_list(self, entities: Collection[BaseEntity]) -> bool:
-        """Check if this button is supported given the list of entities."""
-        cls = type(self)
-        return not any(type(entity) is cls for entity in entities if entity is not self)
+    def __init__(self, device: Device, *, cluster: Cluster, **kwargs: Any) -> None:
+        """Init the identify button, sending commands to the given Identify cluster."""
+        self._cluster = cluster
+        super().__init__(device, **kwargs)
+
+    @property
+    def device(self) -> Device:
+        """Return the device."""
+        return self._device
+
+    @staticmethod
+    def legacy_identify_cluster(device: Device) -> Cluster | None:
+        """Return the Identify cluster the legacy unique ID was derived from."""
+        for ep_id, ep in device.endpoints.items():
+            if ep_id == 0 or Identify.cluster_id not in ep.zigpy_endpoint.in_clusters:
+                continue
+            return ep.zigpy_endpoint.in_clusters[Identify.cluster_id]
+        return None
+
+    # TODO: remove once zha-quirks only filters `ZclPlatformEntity` by endpoint/cluster
+    # and HA Core's `websocket_get_groupable_devices` no longer reads `entity.endpoint`
+    @property
+    def endpoint(self) -> Endpoint:
+        """Return the endpoint of the Identify cluster, for old quirks."""
+        warnings.warn(
+            f"`{type(self).__name__}.endpoint` is deprecated, device-bound entities"
+            " have no endpoint",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._device.endpoints[self._cluster.endpoint.endpoint_id]
+
+    def targets_cluster(
+        self, cluster_id: int, cluster_type: ClusterType | None = None
+    ) -> bool:
+        """Match the Identify cluster, for old quirks."""
+        warnings.warn(
+            f"`{type(self).__name__}.targets_cluster` is deprecated, device-bound"
+            " entities have no cluster",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return cluster_id == Identify.cluster_id and cluster_type in (
+            None,
+            ClusterType.Server,
+        )
+
+    @property
+    def state(self) -> CommandButtonState:
+        """Return the state of the button."""
+        return CommandButtonState(
+            **super().state.__dict__,
+            command="identify",
+            args=[DEFAULT_DURATION],
+            kwargs={},
+        )
+
+    async def async_press(self) -> None:
+        """Identify the device."""
+        await self._cluster.identify(DEFAULT_DURATION)
 
 
 class WriteAttributeButton(BaseButton, ZclPlatformEntity):
