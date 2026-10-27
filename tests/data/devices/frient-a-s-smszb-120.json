@@ -331,7 +331,7 @@
     "button": [
       {
         "fallback_name": null,
-        "unique_id": "ab:cd:ef:12:2d:1d:92:32-1-3",
+        "unique_id": "ab:cd:ef:12:2d:1d:92:32-35-3",
         "migrate_unique_ids": [],
         "platform": "button",
         "class_name": "IdentifyButton",
