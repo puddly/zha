@@ -9,6 +9,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 import warnings
 
+from zigpy.profiles.zha import PROFILE_ID as ZHA_PROFILE_ID
+from zigpy.profiles.zll import PROFILE_ID as ZLL_PROFILE_ID
 from zigpy.zcl import Cluster, ClusterType
 from zigpy.zcl.clusters.general import Identify
 
@@ -147,11 +149,26 @@ class IdentifyButton(BaseButton):
 
     @staticmethod
     def legacy_identify_cluster(device: Device) -> Cluster | None:
-        """Return the Identify cluster the legacy unique ID was derived from."""
+        """Return the Identify cluster the legacy unique ID was derived from.
+
+        This is the first one that ZCL discovery would have matched: on a ZHA or ZLL
+        endpoint, and not renamed by a quirk.
+        """
         for ep_id, ep in device.endpoints.items():
-            if ep_id == 0 or Identify.cluster_id not in ep.zigpy_endpoint.in_clusters:
+            zigpy_ep = ep.zigpy_endpoint
+
+            if (
+                ep_id == 0
+                or zigpy_ep.profile_id not in (ZHA_PROFILE_ID, ZLL_PROFILE_ID)
+                or Identify.cluster_id not in zigpy_ep.in_clusters
+            ):
                 continue
-            return ep.zigpy_endpoint.in_clusters[Identify.cluster_id]
+
+            cluster = zigpy_ep.in_clusters[Identify.cluster_id]
+
+            if cluster.ep_attribute == Identify.ep_attribute:
+                return cluster
+
         return None
 
     # TODO: remove once zha-quirks only filters `ZclPlatformEntity` by endpoint/cluster
