@@ -1187,7 +1187,7 @@
         "primary": false,
         "extra_state_attribute_names": [],
         "device_ieee": "ab:cd:ef:12:74:0f:89:c3",
-        "endpoint_id": 2,
+        "endpoint_id": null,
         "available": true,
         "group_id": null,
         "command": "identify",

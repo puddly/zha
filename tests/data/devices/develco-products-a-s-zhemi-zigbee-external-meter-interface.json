@@ -292,7 +292,7 @@
     "button": [
       {
         "fallback_name": null,
-        "unique_id": "ab:cd:ef:12:57:64:bf:25-2-3",
+        "unique_id": "ab:cd:ef:12:57:64:bf:25-1-3",
         "migrate_unique_ids": [],
         "platform": "button",
         "class_name": "IdentifyButton",
@@ -306,7 +306,7 @@
         "primary": false,
         "extra_state_attribute_names": [],
         "device_ieee": "ab:cd:ef:12:57:64:bf:25",
-        "endpoint_id": 2,
+        "endpoint_id": null,
         "available": true,
         "group_id": null,
         "command": "identify",
